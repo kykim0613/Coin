@@ -1,7 +1,9 @@
 import { CategoryScale, Chart as ChartJS, Legend, LineElement, LinearScale, PointElement, Title, Tooltip } from "chart.js/auto";
-import { Line } from "react-chartjs-2";
+import { Bar, Line } from "react-chartjs-2";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
+import Ticks from "./Ticks";
+import { binanceAPI, rateAPI, upbitMinutesAPI } from "../api";
 
 const Container = styled.div`
     width: 100vh;
@@ -18,20 +20,16 @@ const Main = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-
-                const response1 = await fetch(`https://v6.exchangerate-api.com/v6/3daf2baaecbc1ae5683a3992/latest/USD`)
-                const data1 = await response1.json()
+                const data1 = await rateAPI()
                 const rate = data1.conversion_rates.KRW
 
-                const response2 = await fetch('https://api.upbit.com/v1/candles/minutes/1?market=KRW-BTC&count=1')
-                const data2 = await response2.json()
+                const data2 = await upbitMinutesAPI()
                 const upbitPrice = data2.map((data) => data.trade_price)
                 setUpBitCoins(data2)
                 setTimeArray((prevTimeArray) => [...prevTimeArray, ...data2.map((time) => time.candle_date_time_kst.slice(11, 16))])
                 setUpBitPriceArray((prevPriceArray) => [...prevPriceArray, ...data2.map((price) => price.trade_price)])
                 
-                const response3 = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT')
-                const data3 = await response3.json();
+                const data3 = await binanceAPI()
                 const binancePrice = data3.price * rate
                 const price = binancePrice.toFixed(2)
                 setBinanceCoins(data3)
@@ -58,8 +56,6 @@ const Main = () => {
             setBinancePriceArray((prevPriceArray) => prevPriceArray.slice(prevPriceArray.length - maxLength))
         }
     }, [timeArray]);
-
-    console.log(price)
 
     const lineChart = {
         labels: timeArray,
@@ -102,6 +98,10 @@ const Main = () => {
         <>
             <Container>
                 <Line data={lineChart} options={options} />
+                <Ticks 
+                options={options}
+                binanceCoins={binanceCoins}
+                />
             </Container>
         </>
     )

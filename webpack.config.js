@@ -29,6 +29,12 @@ module.exports = {
             },
         ],
     },
+    // plugins: [
+    //     new webpack.providePlugin({
+    //         Chart: ['chart.js', 'Chart'],
+    //         'window.Chart': ['chart.js', 'Chart']
+    //     })
+    // ],
     devServer: {
         static: {
             directory: path.join(__dirname, '/public'),
