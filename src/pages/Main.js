@@ -3,106 +3,117 @@ import { Bar, Line } from "react-chartjs-2";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import Ticks from "./Ticks";
-import { binanceAPI, rateAPI, upbitMinutesAPI } from "../api";
+import Date from "./Date";
+import { binanceListAPI, upbitListAPI } from "../api";
+import { Market } from "../atom";
 
-const Container = styled.div`
-    width: 100vh;
+const BtnContainer = styled.div`
+    
+`
+const MinBtn = styled.button`
+    width: 30px;
+    height: 30px;
+    border:none;
+    border-radius: 30px;
+    ${(props) => props.active && `border: 1px solid black`};
+    background: white;
+    margin-left: 1px;
+`
+const DateBtn = styled.button`
+    width: 30px;
+    height: 30px;
+    border:none;
+    border-radius: 30px;
+    ${(props) => props.active && `border: 1px solid black`};
+    background: white;
+    margin-left: 1px;
+`
+const WeekBtn = styled.button`
+    width: 30px;
+    height: 30px;
+    border:none;
+    border-radius: 30px;
+    ${(props) => props.active && `border: 1px solid black`};
+    background: white;
+    margin-left: 1px;
+`
+const MonthBtn = styled.button`
+    width: 30px;
+    height: 30px;
+    border:none;
+    border-radius: 30px;
+    ${(props) => props.active && `border: 1px solid black`};
+    background: white;
+    margin-left: 1px;
 `
 
 const Main = () => {
-    const [upBitCoins, setUpBitCoins] = useState([])
-    const [timeArray, setTimeArray] = useState([])
-    const [upBitPriceArray, setUpBitPriceArray] = useState([])
-    const [binanceCoins, setBinanceCoins] = useState([])
-    const [binancePriceArray, setBinancePriceArray] = useState([])
-    const [price, setPrice] = useState()
-    
+    const [minBtn, setMinBtn] = useState(false)
+    const [dateBtn, setDateBtn] = useState(false)
+    const [weekBtn, setWeekBtn] = useState(false)
+    const [monthBtn, setMonthBtn] = useState(false)
+    const [selectList, setSelectList] = useState([])
+    const [selected, setSelected] = useState(``)
+
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const data1 = await rateAPI()
-                const rate = data1.conversion_rates.KRW
+                const data1 = await upbitListAPI()
+                const upbitSymbol = data1.map((title) => title.t.slice(4, title.t.length))
 
-                const data2 = await upbitMinutesAPI()
-                const upbitPrice = data2.map((data) => data.trade_price)
-                setUpBitCoins(data2)
-                setTimeArray((prevTimeArray) => [...prevTimeArray, ...data2.map((time) => time.candle_date_time_kst.slice(11, 16))])
-                setUpBitPriceArray((prevPriceArray) => [...prevPriceArray, ...data2.map((price) => price.trade_price)])
-                
-                const data3 = await binanceAPI()
-                const binancePrice = data3.price * rate
-                const price = binancePrice.toFixed(2)
-                setBinanceCoins(data3)
-                setBinancePriceArray((prevPriceArray) => [...prevPriceArray, price])
-                
-                setPrice((binancePrice+upbitPrice[0])/2)
+                const data2 = await binanceListAPI()
+                const binanceSymbol = data2.map((title) => title.t.slice(0, title.t.length - 4))
+
+                let listArray = []
+                for (let i = 0; i < upbitSymbol.length; i++) {
+                    for (let j = 0; j < binanceSymbol.length; j++) {
+                        if (upbitSymbol[i] === binanceSymbol[j]) {
+                            listArray = [...listArray, upbitSymbol[i]]
+                        }
+                    }
+                }
+                setSelectList(listArray)
+
             } catch (error) {
                 console.log(error)
             }
         }
 
         fetchData()
-
-        const interval = setInterval(fetchData, 60000);
-
-        return () => clearInterval(interval)
     }, [])
 
-    useEffect(() => {
-        const maxLength = 200
-        if (maxLength < timeArray.length) {
-            setTimeArray((prevTimeArray) => prevTimeArray.slice(prevTimeArray.length - maxLength));
-            setUpBitPriceArray((prevPriceArray) => prevPriceArray.slice(prevPriceArray.length - maxLength))
-            setBinancePriceArray((prevPriceArray) => prevPriceArray.slice(prevPriceArray.length - maxLength))
-        }
-    }, [timeArray]);
-
-    const lineChart = {
-        labels: timeArray,
-        datasets: [
-            {
-                label: binanceCoins.symbol,
-                data: binancePriceArray,
-                fill: false,
-                borderColor: 'yellow',
-                tension: 0.1,
-            },
-            {
-                label: upBitCoins.map((coin) => coin.market),
-                data: upBitPriceArray,
-                fill: false,
-                borderColor: 'blue',
-                tension: 0.1,
-            },
-        ],
+    const handleMinBtn = () => {
+        setMinBtn(true)
+        setDateBtn(false)
+        setWeekBtn(false)
+        setMonthBtn(false)
     }
 
-    const options = {
-        scales: {
-            y: {
-                type: 'linear',
-                min: Math.floor(price-500000),
-                max: Math.floor(price+500000),
-                position: 'left',
-                grid: {
-                    display: false
-                }
-            }
-        },
-        animation: {
-            duration: 0
-        }
+    const handleDateBtn = () => {
+        setMinBtn(false)
+        setDateBtn(true)
+        setWeekBtn(false)
+        setMonthBtn(false)
     }
 
+    const handleSelectChange = (e) => {
+        setSelected(e.target.value)
+    }
     return (
         <>
-            <Container>
-                <Line data={lineChart} options={options} />
-                <Ticks 
-                options={options}
-                binanceCoins={binanceCoins}
-                />
-            </Container>
+        <select onChange={handleSelectChange}>
+            {selectList.map((option) => (
+                <option key={option}>{option}</option>
+            ))}
+        </select>
+            <BtnContainer>
+                <MinBtn active={minBtn} onClick={handleMinBtn}>분</MinBtn>
+                <DateBtn active={dateBtn} onClick={handleDateBtn}>일</DateBtn>
+                <WeekBtn active={weekBtn}>주</WeekBtn>
+                <MonthBtn active={monthBtn}>월</MonthBtn>
+            </BtnContainer>
+            {minBtn && <Ticks selected={selected} />}
+            {dateBtn && <Date selected={selected} />}
         </>
     )
 }

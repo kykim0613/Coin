@@ -12,7 +12,7 @@ const VolumeContainer = styled.div`
     color: white;
 `
 
-const Ticks = ({selected}) => {
+const Date = ({selected}) => {
     const [upbitCoins, setUpbitCoins] = useState([])
     const [upbitPriceArray, setUpBitPriceArray] = useState([])
     const [time, setTime] = useState([])
@@ -25,16 +25,15 @@ const Ticks = ({selected}) => {
         const fetchData = async () => {
             try {
                 const dataList1 = await upbitListAPI()
-                const dateStart = dataList1[11].s
                 const dateEnd = dataList1[11].e
 
                 const dataList2 = await binanceListAPI()
 
-                const data1 = await upbitCandlesAPI(selected, dateEnd-10000, dateEnd)
-                setUpbitCoins(data1.slice(0, 60))
+                const data1 = await upbitCandlesAPI(selected, dateEnd-100000, dateEnd)
+                setUpbitCoins(data1.slice(0, 1440))
 
-                const data2 = await binanceCandlesAPI(selected, dateEnd-10000, dateEnd)
-                setBinanceCoins(data2.slice(0, 60))
+                const data2 = await binanceCandlesAPI(selected, dateEnd-100000, dateEnd)
+                setBinanceCoins(data2.slice(0, 1440))
 
             } catch (error) {
                 console.log(error)
@@ -53,7 +52,7 @@ const Ticks = ({selected}) => {
         const bnbVolume = binanceCoins.map((vol) => vol.candleAccTradeVolume)
         setUpBitPriceArray(upbitArray)
         setBinancePriceArray(binanceArray)
-        setTime(time.sort((a, b) => a-b))
+        setTime(time)
         setUpbitVolume(upVolume)
         setBinanceVolume(bnbVolume)
     }, [upbitCoins, binanceCoins])
@@ -92,7 +91,8 @@ const Ticks = ({selected}) => {
                 }
             },
             x: {
-                min: binancePriceArray[binancePriceArray.length]
+                // min: binancePriceArray[binancePriceArray.length],
+                max: 300
             }
         },
         animation: {
@@ -192,6 +192,7 @@ const Ticks = ({selected}) => {
     const handleRateInput = (e) => {
         setRate(e.target.value)
     }
+
     return (
         <>
         <Market>
@@ -208,4 +209,4 @@ const Ticks = ({selected}) => {
     )
 }
 
-export default Ticks;
+export default Date;
