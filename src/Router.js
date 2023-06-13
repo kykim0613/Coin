@@ -5,7 +5,7 @@ const Router = () => {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/Main" element={<Main />} />
+                <Route path="/Coin" element={<Main />} />
             </Routes>
         </BrowserRouter>
     )
