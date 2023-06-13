@@ -5,7 +5,6 @@ import styled from "styled-components";
 import Ticks from "./Ticks";
 import Date from "./Date";
 import { binanceListAPI, upbitListAPI } from "../api";
-import { Market } from "../atom";
 
 const BtnContainer = styled.div`
     
@@ -48,7 +47,7 @@ const MonthBtn = styled.button`
 `
 
 const Main = () => {
-    const [minBtn, setMinBtn] = useState(false)
+    const [minBtn, setMinBtn] = useState(true)
     const [dateBtn, setDateBtn] = useState(false)
     const [weekBtn, setWeekBtn] = useState(false)
     const [monthBtn, setMonthBtn] = useState(false)
@@ -73,6 +72,7 @@ const Main = () => {
                     }
                 }
                 setSelectList(listArray)
+                setSelected(listArray[0])
 
             } catch (error) {
                 console.log(error)
